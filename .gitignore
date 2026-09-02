@@ -1,0 +1,16 @@
+# Ambientes virtuais
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Ambiente e configurações
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Arquivos gerados
+outputs/
