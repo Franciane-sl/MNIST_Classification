@@ -1,6 +1,8 @@
-import numpy as np
+from pathlib import Path
 
-"Função para inspecionar os dados do dataset."
+import numpy as np
+import matplotlib.pyplot as plt
+
 
 def inspecionar_dados(x, y):
 
@@ -34,3 +36,26 @@ def inspecionar_dados(x, y):
 
     print(f"Diferença entre as classes: {diferenca} imagens")
     print("\n" + "=" * 30 + " Fim da inspeção inicial do dataset " + "=" * 30)
+
+def visualizar_digitos(x, y):
+  
+  fig, axes = plt.subplots(2, 5, figsize=(10, 5))
+
+  fig.patch.set_facecolor("#DDA0DD")
+
+  for digito in range(10):
+     indice = np.where(y == str(digito))[0][0]
+     imagem = x[indice].reshape(28, 28)
+
+     axes.flat[digito].imshow(imagem, cmap="gray")
+     axes.flat[digito].set_title(str(digito))
+     axes.flat[digito].axis("off")
+
+  plt.tight_layout()
+  pasta_imagens = Path(__file__).resolve().parent.parent / "imagens" / "eda"
+  pasta_imagens.mkdir(parents=True, exist_ok=True)
+
+  caminho_imagem = pasta_imagens / "visualizacao_digitos.png"
+  fig.savefig(caminho_imagem)
+
+  plt.show()
