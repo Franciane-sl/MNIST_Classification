@@ -83,3 +83,34 @@ def verificar_distribuicao_classes(y_treino, y_validacao, y_teste):
             f"{quantidade_teste:<12}"
             f"{percentual_teste:<10.2f}"
         )
+
+def normalizar_dados(X_treino, X_validacao, X_teste):
+    
+    X_treino_normalizado = X_treino / 255.0
+    X_validacao_normalizado = X_validacao / 255.0
+    X_teste_normalizado = X_teste / 255.0
+
+    return (
+        X_treino_normalizado,
+        X_validacao_normalizado,
+        X_teste_normalizado
+    )
+
+def verificar_normalizacao(X_treino, X_validacao, X_teste):
+
+    print("Verificação da normalização:\n")
+
+    print("X treino:")
+    print(f"Valor mínimo: {X_treino.min():.2f}")
+    print(f"Valor máximo: {X_treino.max():.2f}")
+    print(f"Dimensão: {X_treino.shape}")
+
+    print("\nX validação:")
+    print(f"Valor mínimo: {X_validacao.min():.2f}")
+    print(f"Valor máximo: {X_validacao.max():.2f}")
+    print(f"Dimensão: {X_validacao.shape}")
+
+    print("\nX teste:")
+    print(f"Valor mínimo: {X_teste.min():.2f}")
+    print(f"Valor máximo: {X_teste.max():.2f}")
+    print(f"Dimensão: {X_teste.shape}")
