@@ -1,4 +1,5 @@
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 import time
 
 def criar_knn(n_neighbors=5, weights="distance"):
@@ -26,3 +27,12 @@ def prever_modelo(modelo, X):
     tempo_predicao = time.time() - inicio
 
     return previsoes, tempo_predicao
+
+def criar_random_forest(n_estimators=100, max_depth=10):
+    modelo = RandomForestClassifier(
+        n_estimators=n_estimators,
+        max_depth=max_depth,
+        random_state=42
+    )
+
+    return modelo
