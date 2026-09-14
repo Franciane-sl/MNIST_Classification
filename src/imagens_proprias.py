@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image, ImageOps, ImageEnhance
 
 from pathlib import Path
 from PIL import Image, ImageOps
@@ -22,6 +23,11 @@ def carregar_imagem(caminho):
 def converter_para_cinza(imagem):
 
     return imagem.convert("L")
+
+def aumentar_contraste(imagem, fator=2.0):
+
+    enhancer = ImageEnhance.Contrast(imagem)
+    return enhancer.enhance(fator)
 
 
 def inverter_cores(imagem):
@@ -107,23 +113,17 @@ def normalizar_imagem(imagem):
 
 
 def preprocessar_imagem(caminho):
-  
+
     imagem = carregar_imagem(caminho)
-
     imagem = converter_para_cinza(imagem)
-
+    imagem = aumentar_contraste(imagem)
     imagem = inverter_cores(imagem)
-
     imagem = centralizar_digito(imagem)
-
     imagem = redimensionar_imagem(imagem)
-
     imagem_normalizada = normalizar_imagem(imagem)
-
     imagem_modelo = imagem_normalizada.reshape(1, -1)
 
     return imagem, imagem_normalizada, imagem_modelo
-
 
 def prever_imagem(modelo, imagem_modelo):
 
@@ -142,38 +142,36 @@ def plotar_previsao(
     imagem_processada,
     digito_predito,
     probabilidades,
-    classes
+    classes,
+    nome_arquivo=None
 ):
+    fig, eixos = plt.subplots(1, 2, figsize=(12, 5))
 
-    fig, eixos = plt.subplots(
-        1,
-        2,
-        figsize=(12, 5)
-    )
-
-    eixos[0].imshow(
-        imagem_processada,
-        cmap="gray"
-    )
-
+    eixos[0].imshow(imagem_processada, cmap="gray")
     eixos[0].set_title(
         f"Imagem processada - Predição: {digito_predito}"
     )
-
     eixos[0].axis("off")
 
-    eixos[1].bar(
-        classes,
-        probabilidades
-    )
-
+    eixos[1].bar(classes, probabilidades)
     eixos[1].set_title("Probabilidades por classe")
     eixos[1].set_xlabel("Dígito")
     eixos[1].set_ylabel("Probabilidade")
-
     eixos[1].set_ylim(0, 1)
 
     plt.tight_layout()
-    plt.show()
 
+    if nome_arquivo is not None:
+        pasta_imagens = (
+            Path(__file__).resolve().parent.parent
+            / "imagens"
+            / "minhas_imagens"
+        )
+
+        pasta_imagens.mkdir(parents=True, exist_ok=True)
+
+        caminho_imagem = pasta_imagens / nome_arquivo
+        fig.savefig(caminho_imagem, dpi=300, bbox_inches="tight")
+
+    plt.show()
     plt.close(fig)
