@@ -86,14 +86,23 @@ def analisar_previsoes_ood(y_real, previsoes):
 def calcular_matriz_confusao_ood(
     y_real,
     previsoes,
-    classes_reais
+    classes_reais,
+    classes_preditas
 ):
 
-    matriz = confusion_matrix(
-        y_real,
-        previsoes,
-        labels=classes_reais
+    matriz = np.zeros(
+        (len(classes_reais), len(classes_preditas)),
+        dtype=int
     )
+
+    for i, classe_real in enumerate(classes_reais):
+
+        for j, classe_predita in enumerate(classes_preditas):
+
+            matriz[i, j] = np.sum(
+                (y_real == classe_real) &
+                (previsoes == classe_predita)
+            )
 
     return matriz
 
@@ -120,6 +129,142 @@ def plotar_matriz_confusao_ood(
     ax.set_title("Matriz de Confusão - OOD")
     ax.set_xlabel("Dígito Predito")
     ax.set_ylabel("Dígito Real")
+
+    plt.tight_layout()
+
+    pasta_imagens = (
+        Path(__file__).resolve().parent.parent
+        / "imagens"
+        / "ood"
+    )
+
+    pasta_imagens.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    caminho_imagem = (
+        pasta_imagens
+        / nome_arquivo
+    )
+
+    fig.savefig(caminho_imagem)
+
+    plt.show()
+
+    plt.close(fig)
+
+    return 
+
+def analisar_confianca_ood(
+    probabilidades,
+    y_real
+):
+    confiancas = probabilidades.max(axis=1)
+
+    resultados = {}
+
+    classes_reais = np.unique(y_real)
+
+    for classe in classes_reais:
+
+        mascara = y_real == classe
+
+        confiancas_classe = confiancas[mascara]
+
+        resultados[classe] = {
+            "confianca_media": float(
+                confiancas_classe.mean()
+            ),
+            "confianca_minima": float(
+                confiancas_classe.min()
+            ),
+            "confianca_maxima": float(
+                confiancas_classe.max()
+            )
+        }
+
+    return resultados
+
+def contar_confiancas_ood(
+    probabilidades,
+    y_real,
+    limiares=(0.80, 0.90, 0.95)
+):
+ 
+    confiancas = probabilidades.max(axis=1)
+
+    resultados = {}
+
+    for classe in np.unique(y_real):
+
+        mascara = y_real == classe
+        confiancas_classe = confiancas[mascara]
+
+        total = len(confiancas_classe)
+
+        resultados[classe] = {}
+
+        for limiar in limiares:
+
+            quantidade = np.sum(
+                confiancas_classe >= limiar
+            )
+
+            resultados[classe][f">={int(limiar * 100)}%"] = {
+                "quantidade": int(quantidade),
+                "percentual": float(
+                    quantidade / total * 100
+                )
+            }
+
+    return resultados
+
+def plotar_distribuicao_previsoes_ood(
+    resultados,
+    nome_arquivo="distribuicao_previsoes_ood.png"
+):
+
+    classes_reais = list(resultados.keys())
+
+    classes_preditas = sorted({
+        classe_predita
+        for resultado in resultados.values()
+        for classe_predita in resultado.keys()
+    })
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    x = np.arange(len(classes_preditas))
+    largura = 0.35
+
+    for i, classe_real in enumerate(classes_reais):
+
+        percentuais = [
+            resultados[classe_real]
+            .get(classe_predita, {})
+            .get("percentual", 0)
+            for classe_predita in classes_preditas
+        ]
+
+        ax.bar(
+            x + i * largura,
+            percentuais,
+            largura,
+            label=f"Classe real {classe_real}"
+        )
+
+    ax.set_title("Distribuição das Previsões OOD")
+    ax.set_xlabel("Classe predita")
+    ax.set_ylabel("Percentual (%)")
+
+    ax.set_xticks(
+        x + largura * (len(classes_reais) - 1) / 2
+    )
+
+    ax.set_xticklabels(classes_preditas)
+
+    ax.legend()
 
     plt.tight_layout()
 
